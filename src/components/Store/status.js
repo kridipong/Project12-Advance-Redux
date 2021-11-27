@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const statusSlice = createSlice({
   name: "status",
-  initialState: { isLoggedIn: true, notification: null },
+  initialState: { isLoggedIn: true, notification:null},
   reducers: {
     toggleShow(state) {
       state.isLoggedIn = !state.isLoggedIn;

@@ -4,56 +4,44 @@ import Products from "./components/Shop/Products";
 // import store from './components/store/index';
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect} from "react";
-import {statusActions} from './components/Store/status';
+import { fetchCartData, sendCartData } from "./components/Store/cart-actions";
+import Notification from "./components/Layout/Notification";
+import { cartActions } from "./components/Store/cart-slice";
+
+
+let isInitial = true;
 
 function App() {
   const isLoggedIn = useSelector((state) => state.status.isLoggedIn);
+  const notification = useSelector((state)=> state.status.notification);
   const cart = useSelector((state) => state.cart);
   const dispatch = useDispatch();
+  
+  useEffect(()=>{
+    dispatch(fetchCartData());
+
+  }, [dispatch]);
+
+
   useEffect(() => {
-    const sendCartData = async () => {
-      dispatch(statusActions.showNotification({
-        status:'pending', 
-        title:'sending..',
-        message:'Sending cart data'
-      }));
-      const response = await fetch(
-        "https://myreactapp-14003-default-rtdb.asia-southeast1.firebasedatabase.app/cart.json",
-        { method: "PUT", body: JSON.stringify(cart) }
-      );
-      
-      if (!response.ok) {
-        throw new Error('Sending cart data error');
-      }
+    if (isInitial) {
+      isInitial =false;
 
-      dispatch(statusActions.showNotification({
-        status:'success', 
-        title:'Success!!!',
-        message:'Sending cart data successfully'
-      }));
+      return;
+    }
+    if (cart.changed) {
+    dispatch(sendCartData(cart));
+    }
 
-    };
-
-    sendCartData().catch(error=>{
-      dispatch(statusActions.showNotification({
-        status:'error', 
-        title:'Error!',
-        message:'System cannot update data to the server'
-      }));
-    })
-
-  }
-  
-
-  
-  , [cart]);
+   }, [cart,dispatch]);
 
 
 
   return (
     <Layout>
-      {isLoggedIn && <Cart />}
-      <Products />
+    {notification && <Notification status={notification.status} title={notification.title} message= {notification.message} />}
+    {isLoggedIn && <Cart />}
+    <Products />
     </Layout>
   );
 }
